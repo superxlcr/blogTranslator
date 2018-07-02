@@ -4,12 +4,26 @@ from urllib import request
 
 from bs4 import BeautifulSoup
 
-import utils
-
 CSDN_BLOG_STR = str("blog.csdn.net")
 PARAM_LENGTH = 3
 file = None
 imgCounter = 0
+
+
+def getTagAllContentsStr(tag):
+    result = ""
+    for content in tag.contents:
+        if content.string is not None:
+            result += content
+    return result
+
+
+def dealWithTagUl(tagUl):
+    global file
+    for liTag in tagUl.contents:
+        file.write("- ")
+        traverseContent(liTag)
+        file.write("\n")
 
 
 def dealWithTagA(tagA):
@@ -28,28 +42,48 @@ def dealWithTagImg(tagImg):
     file.write("![{}_pic{}]({})".format(tagImg['alt'], imgCounter, tagImg['src']))
 
 
-def traverseContent(contentTag, recursiveCounter):
+def traverseContent(contentTag):
     for tag in contentTag.contents:
         if type(tag).__name__ == 'NavigableString':
             file.write(tag.string)
-        elif len(tag.contents) > 0 and type(tag.contents[0]).__name__ != 'NavigableString':
-            traverseContent(tag, recursiveCounter + 1)
-        elif utils.isTagA(tag):
-            dealWithTagA(tag)
-        elif utils.isTagBr(tag):
-            file.write(" ")
-        elif utils.isTagImg(tag):
+        elif tag.name == 'ul':
+            # <ul>
+            dealWithTagUl(tag)
+        elif tag.name == 'h1':
+            # <h1>
+            file.write("# " + getTagAllContentsStr(tag))
+        elif tag.name == 'h2':
+            # <h2>
+            file.write("## " + getTagAllContentsStr(tag))
+        elif tag.name == 'img':
+            # <img>
             dealWithTagImg(tag)
-        elif utils.isTagCode(tag):
+        elif len(tag.contents) > 1 or len(tag.contents) == 1 and type(tag.contents[0]).__name__ != 'NavigableString':
+            # deal with nesting tag
+            traverseContent(tag)
+        elif tag.name == 'a':
+            # <a>
+            dealWithTagA(tag)
+        elif tag.name == 'br':
+            # <br>
+            file.write(" ")
+        elif tag.name == 'code':
+            # <code>
             file.write("```\n")
             file.write(tag.string)
             file.write("\n```")
-        elif utils.isTagP(tag):
-            if tag.string != None:
+        elif tag.name == 'p':
+            # <p>
+            if tag.string is not None:
                 file.write(tag.string)
+        elif tag.name == 'div':
+            # <div>
+            file.write(tag.string)
+        elif tag.name == 'strong':
+            # <strong>
+            file.write("**{}**".format(tag.string))
 
-        if recursiveCounter == 0:
-            file.write("\n")
+        # todo handle <tr>
 
 
 def doTranslate():
@@ -72,7 +106,7 @@ def doTranslate():
                                                      timeMatch.group(4), timeMatch.group(5), timeMatch.group(6)))
 
     contentTag = soup.find_all('div', 'htmledit_views')
-    traverseContent(contentTag[len(contentTag) - 1], 0)
+    traverseContent(contentTag[len(contentTag) - 1])
 
 
 def checkParamAndOpenFile():
@@ -90,7 +124,7 @@ def checkParamAndOpenFile():
         print("the first param must be a csdn blog url which must contains " + CSDN_BLOG_STR)
         exit(0)
     filePath = sys.argv[2]
-    file = open(filePath, 'a', encoding="utf-8")
+    file = open(filePath, 'w', encoding="utf-8")
 
 
 if __name__ == '__main__':
