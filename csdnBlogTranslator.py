@@ -9,6 +9,10 @@ PARAM_LENGTH = 3
 file = None
 imgCounter = 0
 
+dealingWithTableRow = 0
+tableColumns = 0
+missNewLine = False
+
 
 def getTagAllContentsStr(tag):
     result = ""
@@ -43,9 +47,15 @@ def dealWithTagImg(tagImg):
 
 
 def traverseContent(contentTag):
+    global dealingWithTableRow
+    global tableColumns
+    global missNewLine
     for tag in contentTag.contents:
         if type(tag).__name__ == 'NavigableString':
-            file.write(tag.string)
+            writeStr = tag.string
+            if missNewLine:
+                writeStr = writeStr.replace('\n', '')
+            file.write(writeStr)
         elif tag.name == 'ul':
             # <ul>
             dealWithTagUl(tag)
@@ -58,6 +68,30 @@ def traverseContent(contentTag):
         elif tag.name == 'img':
             # <img>
             dealWithTagImg(tag)
+        elif tag.name == 'tbody':
+            # <tbody>
+            dealingWithTableRow = 0
+            tableColumns = 0
+            traverseContent(tag)
+        elif tag.name == 'tr':
+            if dealingWithTableRow == 1:
+                file.write("|")
+                for i in range(0, tableColumns):
+                    file.write(" - |")
+                file.write("\n")
+            dealingWithTableRow += 1
+            # <tr>
+            file.write("| ")
+            missNewLine = True
+            traverseContent(tag)
+            file.write("\n")
+            missNewLine = False
+            pass
+        elif tag.name == 'td':
+            # <td>
+            tableColumns += 1
+            traverseContent(tag)
+            file.write(" | ")
         elif len(tag.contents) > 1 or len(tag.contents) == 1 and type(tag.contents[0]).__name__ != 'NavigableString':
             # deal with nesting tag
             traverseContent(tag)
@@ -83,7 +117,7 @@ def traverseContent(contentTag):
             # <strong>
             file.write("**{}**".format(tag.string))
 
-        # todo handle <tr>
+        # todo use class write better
 
 
 def doTranslate():
