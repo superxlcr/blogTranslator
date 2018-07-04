@@ -1,12 +1,10 @@
-import re
-import sys
 from urllib import request
 
 from bs4 import BeautifulSoup
 
-CSDN_BLOG_STR = str("blog.csdn.net")
-PARAM_LENGTH = 3
-file = None
+import tagProcessors
+import utils
+
 imgCounter = 0
 
 dealingWithTableRow = 0
@@ -22,16 +20,7 @@ def getTagAllContentsStr(tag):
     return result
 
 
-def dealWithTagUl(tagUl):
-    global file
-    for liTag in tagUl.contents:
-        file.write("- ")
-        traverseContent(liTag)
-        file.write("\n")
-
-
 def dealWithTagA(tagA):
-    global file
     content = tagA.string
     href = tagA['href']
     if content == href:
@@ -51,15 +40,7 @@ def traverseContent(contentTag):
     global tableColumns
     global missNewLine
     for tag in contentTag.contents:
-        if type(tag).__name__ == 'NavigableString':
-            writeStr = tag.string
-            if missNewLine:
-                writeStr = writeStr.replace('\n', '')
-            file.write(writeStr)
-        elif tag.name == 'ul':
-            # <ul>
-            dealWithTagUl(tag)
-        elif tag.name == 'h1':
+        if tag.name == 'h1':
             # <h1>
             file.write("# " + getTagAllContentsStr(tag))
         elif tag.name == 'h2':
@@ -117,50 +98,26 @@ def traverseContent(contentTag):
             # <strong>
             file.write("**{}**".format(tag.string))
 
-        # todo use class write better
+            # todo use class write better
 
 
-def doTranslate():
-    global file
+def translate_xml(url, writer):
     # net request
-    url = sys.argv[1]
     print("do request with url : " + url)
     response = request.urlopen(url).read().decode('utf-8')
-    # file.write(response)
-
     soup = BeautifulSoup(response, 'html.parser')
 
-    title = soup.find_all('h1', 'title-article')[0].string
-    file.write("title : " + title + "\n")
+    # write title
+    utils.write_title(soup, writer)
+    # write time
+    utils.write_time(soup, writer)
 
-    timeStr = soup.find_all('span', 'time')[0].string
-    timePattern = re.compile(r'(\d{4}).?(\d{2}).?(\d{2}).*(\d{2}).?(\d{2}).?(\d{2})')
-    timeMatch = timePattern.match(timeStr)
-    file.write("time : {}-{}-{} {}:{}:{}\n\n".format(timeMatch.group(1), timeMatch.group(2), timeMatch.group(3),
-                                                     timeMatch.group(4), timeMatch.group(5), timeMatch.group(6)))
-
-    contentTag = soup.find_all('div', 'htmledit_views')
-    traverseContent(contentTag[len(contentTag) - 1])
-
-
-def checkParamAndOpenFile():
-    global file
-    # check param length
-    length = len(sys.argv)
-    if length != PARAM_LENGTH:
-        print("usage : python csdnBlogTranslator.py csdn_url output_file_path")
-        exit(0)
-
-    # check param
-    url = sys.argv[1]
-    isValidUrl = str(url).find(CSDN_BLOG_STR) != -1
-    if not isValidUrl:
-        print("the first param must be a csdn blog url which must contains " + CSDN_BLOG_STR)
-        exit(0)
-    filePath = sys.argv[2]
-    file = open(filePath, 'w', encoding="utf-8")
+    root_tag = soup.find_all('div', 'htmledit_views')
+    root_processor = tagProcessors.build_tag_processor(writer)
+    root_processor.process(root_tag)
 
 
 if __name__ == '__main__':
-    checkParamAndOpenFile()
-    doTranslate()
+    url_param, file_path = utils.check_params()
+    writer = utils.get_writer(file_path)
+    translate_xml(url_param, writer)
