@@ -5,6 +5,28 @@ CSDN_BLOG_STR = str("blog.csdn.net")
 PARAM_LENGTH = 3
 
 
+class Writer:
+    """输出写入类"""
+    file = None
+
+    def __init__(self, path):
+        self.file = open(path, 'w', encoding='utf-8')
+
+    def write(self, string):
+        """写入字符串"""
+        self.file.write(string)
+        pass
+
+    def write_ignore_new_line(self, string):
+        """写入字符串，并忽略空行"""
+        string = string.replace('\n', '')
+        self.file.write(string)
+
+    def new_line(self):
+        """写入空行"""
+        self.file.write('\n')
+
+
 def check_params():
     # check param length
     length = len(sys.argv)
@@ -36,27 +58,13 @@ def write_time(soup, writer):
                                                        match.group(4), match.group(5), match.group(6)))
 
 
-class Writer:
-    """输出写入类"""
-    file = None
-
-    def __init__(self, path):
-        self.file = open(path, 'w', encoding='utf-8')
-
-    def write(self, string):
-        """写入字符串"""
-        self.file.write(string)
-        pass
-
-    def write_without_new_line(self, string):
-        """写入字符串，并忽略空行"""
-        string = string.replace('\n', '')
-        self.file.write(string)
-
-    def new_line(self):
-        """写入空行"""
-        self.file.write('\n')
-
-
 def get_writer(path):
     return Writer(path)
+
+
+def get_tag_all_contents_str(tag):
+    result = ""
+    for content in tag.contents:
+        if content.string is not None:
+            result += content
+    return result
