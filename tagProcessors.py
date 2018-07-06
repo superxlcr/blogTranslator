@@ -37,10 +37,6 @@ class NavigableStringTagProcessor(BaseTagProcessor):
 
     miss_new_line = False
 
-    @classmethod
-    def set_miss_new_line(cls, value: bool):
-        cls.miss_new_line = value
-
     def can_handle_tag(self, tag):
         return type(tag).__name__ == 'NavigableString'
 
@@ -58,9 +54,27 @@ class UlTagProcessor(BaseTagProcessor):
         return tag.name == 'ul'
 
     def handle(self, tag):
-        # todo 处理嵌套情况 https://blog.csdn.net/superxlcr/article/details/51488648
-        LiTagProcessor.ul_mode = True
+        ul_mode, ol_mode, ol_counter = LiTagProcessor.save_state()
+        LiTagProcessor.begin_ul_mode()
         self.start_process(tag)
+        self.writer.new_line()
+        LiTagProcessor.end_mode()
+        LiTagProcessor.reset_state(ul_mode, ol_mode, ol_counter)
+
+
+class OlTagProcessor(BaseTagProcessor):
+    """<ol> tag 处理器"""
+
+    def can_handle_tag(self, tag):
+        return tag.name == 'ol'
+
+    def handle(self, tag):
+        ul_mode, ol_mode, ol_counter = LiTagProcessor.save_state()
+        LiTagProcessor.begin_ol_mode()
+        self.start_process(tag)
+        self.writer.new_line()
+        LiTagProcessor.end_mode()
+        LiTagProcessor.reset_state(ul_mode, ol_mode, ol_counter)
 
 
 class LiTagProcessor(BaseTagProcessor):
@@ -68,14 +82,52 @@ class LiTagProcessor(BaseTagProcessor):
 
     ul_mode = False
     ol_mode = False
+    ol_counter = 1
+    recursive_counter = -1
+
+    @classmethod
+    def begin_ul_mode(cls):
+        cls.ul_mode = True
+        cls.recursive_counter += 1
+
+    @classmethod
+    def begin_ol_mode(cls):
+        cls.ol_mode = True
+        cls.ol_counter = 1
+        cls.recursive_counter += 1
+
+    @classmethod
+    def end_mode(cls):
+        cls.recursive_counter -= 1
+
+    @classmethod
+    def save_state(cls):
+        return cls.ul_mode, cls.ol_mode, cls.ol_counter
+
+    @classmethod
+    def reset_state(cls, ul_mode: bool, ol_mode: bool, ol_counter: int):
+        cls.ul_mode = ul_mode
+        cls.ol_mode = ol_mode
+        cls.ol_counter = ol_counter
 
     def can_handle_tag(self, tag):
         return tag.name == 'li'
 
     def handle(self, tag):
-        if self.ul_mode:
+        # 处理嵌套情况
+        if self.__class__.recursive_counter > 0:
+            for i in range(0, self.__class__.recursive_counter):
+                self.writer.tab()
+        if self.__class__.ul_mode:
             self.writer.write("- ")
+        elif self.__class__.ol_mode:
+            self.writer.write(str(self.__class__.ol_counter) + ". ")
+            self.__class__.ol_counter += 1
+        # 自己处理换行
+        BrTagProcessor.miss_br = True
         self.start_process(tag)
+        self.writer.new_line()
+        BrTagProcessor.miss_br = False
 
 
 class HTagProcessor(BaseTagProcessor):
@@ -101,8 +153,8 @@ class ImgTagProcessor(BaseTagProcessor):
         return tag.name == 'img'
 
     def handle(self, tag):
-        self.img_counter += 1
-        self.writer.write("![{}_pic{}]({})".format(tag['alt'], self.img_counter, tag['src']))
+        self.__class__.img_counter += 1
+        self.writer.write("![{}_pic{}]({})".format(tag['alt'], self.__class__.img_counter, tag['src']))
 
 
 class TBodyTagProcessor(BaseTagProcessor):
@@ -112,8 +164,8 @@ class TBodyTagProcessor(BaseTagProcessor):
         return tag.name == 'tbody'
 
     def handle(self, tag):
-        TrTagProcessor.clear_table_row()
-        TdTagProcessor.clear_table_column()
+        TrTagProcessor.table_row = 0
+        TdTagProcessor.table_column = 0
         self.start_process(tag)
 
 
@@ -122,45 +174,33 @@ class TrTagProcessor(BaseTagProcessor):
 
     table_row = 0
 
-    @classmethod
-    def clear_table_row(cls):
-        cls.table_row = 0
-
     def can_handle_tag(self, tag):
         return tag.name == 'tr'
 
     def handle(self, tag):
-        if self.table_row == 1:
+        if self.__class__.table_row == 1:
             self.writer.write("|")
-            for i in range(0, TdTagProcessor.get_table_column()):
+            for i in range(0, TdTagProcessor.table_column):
                 self.writer.write(" - |")
             self.writer.new_line()
 
-        TdTagProcessor.clear_table_column()
+        TdTagProcessor.table_column = 0
         self.__class__.table_row += 1
 
         self.writer.write("| ")
         # 下面把换行屏蔽，由TrTag处理器统一换行
-        NavigableStringTagProcessor.set_miss_new_line(True)
-        BrTagProcessor.set_miss_br(True)
+        NavigableStringTagProcessor.miss_new_line = True
+        BrTagProcessor.miss_br = True
         self.start_process(tag)
         self.writer.new_line()
-        NavigableStringTagProcessor.set_miss_new_line(False)
-        BrTagProcessor.set_miss_br(False)
+        NavigableStringTagProcessor.miss_new_line = False
+        BrTagProcessor.miss_br = False
 
 
 class TdTagProcessor(BaseTagProcessor):
     """<td> tag 处理器"""
 
     table_column = 0
-
-    @classmethod
-    def clear_table_column(cls):
-        cls.table_column = 0
-
-    @classmethod
-    def get_table_column(cls):
-        return cls.table_column
 
     def can_handle_tag(self, tag):
         return tag.name == 'td'
@@ -201,10 +241,6 @@ class BrTagProcessor(BaseTagProcessor):
 
     miss_br = False
 
-    @classmethod
-    def set_miss_br(cls, value: bool):
-        cls.miss_br = value
-
     def can_handle_tag(self, tag):
         return tag.name == 'br'
 
@@ -220,12 +256,19 @@ class CodeTagProcessor(BaseTagProcessor):
         return tag.name == 'code'
 
     def handle(self, tag):
-        # TODO 识别语言类型
-        self.writer.write("```")
+        self.writer.write("```" + self.get_code_type(tag['class']))
         self.writer.new_line()
-        self.writer.write(tag.string)
+        self.writer.write(tag.string, html_char_encode=False)
         self.writer.new_line()
         self.writer.write("\n```")
+
+    def get_code_type(self, str_array):
+        for string in str_array:
+            if string.find('java') != -1:
+                return 'java'
+            elif string.find('html') != -1:
+                return 'html'
+        return ''
 
 
 class NormalTextTagProcessor(BaseTagProcessor):

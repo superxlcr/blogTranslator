@@ -8,23 +8,37 @@ PARAM_LENGTH = 3
 class Writer:
     """输出写入类"""
     file = None
+    char_encode_array = [('<', '&lt;'), ('>', '&gt;')]
 
     def __init__(self, path):
         self.file = open(path, 'w', encoding='utf-8')
 
-    def write(self, string):
+    def write(self, string, html_char_encode=True):
         """写入字符串"""
+        if html_char_encode:
+            string = self.html_char_encode(string)
         self.file.write(string)
         pass
 
-    def write_ignore_new_line(self, string):
+    def write_ignore_new_line(self, string, html_char_encode=True):
         """写入字符串，并忽略空行"""
+        if html_char_encode:
+            string = self.html_char_encode(string)
         string = string.replace('\n', '')
         self.file.write(string)
+
+    def html_char_encode(self, string):
+        for (html_char, encode_char) in self.__class__.char_encode_array:
+            string = string.replace(html_char, encode_char)
+        return string
 
     def new_line(self):
         """写入空行"""
         self.file.write('\n')
+
+    def tab(self):
+        """写入tab键"""
+        self.file.write('   ')
 
 
 def check_params():

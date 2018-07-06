@@ -5,6 +5,7 @@ from utils import Writer
 def build_tag_processor(writer: Writer):
     return ProcessorChainBuilder(NavigableStringTagProcessor(), writer) \
         .next(UlTagProcessor()) \
+        .next(OlTagProcessor()) \
         .next(LiTagProcessor()) \
         .next(HTagProcessor()) \
         .next(ImgTagProcessor()) \
