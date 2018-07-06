@@ -58,7 +58,7 @@ class UlTagProcessor(BaseTagProcessor):
         return tag.name == 'ul'
 
     def handle(self, tag):
-        # todo 处理嵌套情况
+        # todo 处理嵌套情况 https://blog.csdn.net/superxlcr/article/details/51488648
         LiTagProcessor.ul_mode = True
         self.start_process(tag)
 
