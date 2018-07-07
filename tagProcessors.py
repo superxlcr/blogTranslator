@@ -154,7 +154,9 @@ class ImgTagProcessor(BaseTagProcessor):
 
     def handle(self, tag):
         self.__class__.img_counter += 1
-        self.writer.write("![{}_pic{}]({})".format(tag['alt'], self.__class__.img_counter, tag['src']))
+        alt = tag.get('alt') if tag.get('alt') is not None else ''
+        src = tag.get('src') if tag.get('src') is not None else ''
+        self.writer.write("![{}_pic{}]({})".format(alt, self.__class__.img_counter, src))
 
 
 class TBodyTagProcessor(BaseTagProcessor):
@@ -229,7 +231,7 @@ class ATagProcessor(BaseTagProcessor):
 
     def handle(self, tag):
         content = tag.string
-        href = tag['href']
+        href = tag.get('href') if tag.get('href') is not None else ''
         if content == href:
             self.writer.write(content)
         else:
@@ -256,18 +258,19 @@ class CodeTagProcessor(BaseTagProcessor):
         return tag.name == 'code'
 
     def handle(self, tag):
-        self.writer.write("```" + self.get_code_type(tag['class']))
+        self.writer.write("```" + self.get_code_type(tag.get('class')))
         self.writer.new_line()
         self.writer.write(tag.string, html_char_encode=False)
         self.writer.new_line()
         self.writer.write("\n```")
 
     def get_code_type(self, str_array):
-        for string in str_array:
-            if string.find('java') != -1:
-                return 'java'
-            elif string.find('html') != -1:
-                return 'html'
+        if str_array is not None:
+            for string in str_array:
+                if string.find('java') != -1:
+                    return 'java'
+                elif string.find('html') != -1:
+                    return 'html'
         return ''
 
 
@@ -275,7 +278,7 @@ class NormalTextTagProcessor(BaseTagProcessor):
     """普通文本 tag 处理器，如 <p> <div>"""
 
     def can_handle_tag(self, tag):
-        return tag.name == 'p' or tag.name == 'div'
+        return tag.name == 'p' or tag.name == 'div' or tag.name == 'span'
 
     def handle(self, tag):
         if tag.string is not None:
