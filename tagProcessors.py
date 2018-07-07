@@ -136,7 +136,7 @@ class HTagProcessor(BaseTagProcessor):
     """<h> 标题类 tag 处理器"""
 
     def can_handle_tag(self, tag):
-        return tag.name == 'h1' or tag.name == 'h2' or tag.name == 'h3'
+        return tag.name == 'h1' or tag.name == 'h2' or tag.name == 'h3' or tag.name == 'h4'
 
     def handle(self, tag):
         if tag.name == 'h1':
@@ -145,6 +145,8 @@ class HTagProcessor(BaseTagProcessor):
             self.writer.write("## ")
         elif tag.name == 'h3':
             self.writer.write("### ")
+        elif tag.name == 'h4':
+            self.writer.write("#### ")
         self.writer.write_ignore_new_line(utils.get_tag_all_contents_str(tag))
 
 
