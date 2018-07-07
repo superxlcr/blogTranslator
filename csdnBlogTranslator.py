@@ -12,10 +12,8 @@ def translate(url, my_writer):
     response = request.urlopen(url).read().decode('utf-8')
     soup = BeautifulSoup(response, 'html.parser')
 
-    # write title
-    utils.write_title(soup, my_writer)
-    # write time
-    utils.write_time(soup, my_writer)
+    # write blog header
+    utils.write_blog_header(soup, my_writer)
 
     root_tag = soup.find_all('div', 'htmledit_views')
     root_processor = processorChainBuilder.build_tag_processor(my_writer)

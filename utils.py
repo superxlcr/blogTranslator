@@ -58,18 +58,27 @@ def check_params():
     return url, out_file_path
 
 
-def write_title(soup, writer):
+def get_blog_title(soup):
     title = soup.find_all('h1', 'title-article')[0].string
-    writer.write("title : " + title)
-    writer.new_line()
+    return title
 
 
-def write_time(soup, writer):
+def get_blog_time(soup):
     time = soup.find_all('span', 'time')[0].string
     pattern = re.compile(r'(\d{4}).?(\d{2}).?(\d{2}).*(\d{2}).?(\d{2}).?(\d{2})')
     match = pattern.match(time)
-    writer.write("time : {}-{}-{} {}:{}:{}\n\n".format(match.group(1), match.group(2), match.group(3),
-                                                       match.group(4), match.group(5), match.group(6)))
+    return "{}-{}-{} {}:{}:{}".format(match.group(1), match.group(2), match.group(3), match.group(4),
+                                      match.group(5), match.group(6))
+
+
+def write_blog_header(soup, writer):
+    writer.write("""---
+title: {}
+tags: []
+categories: []
+date: {}
+description: 
+---""".format(get_blog_title(soup), get_blog_time(soup)))
 
 
 def get_writer(path):
