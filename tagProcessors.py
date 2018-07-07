@@ -260,11 +260,13 @@ class CodeTagProcessor(BaseTagProcessor):
         return tag.name == 'code'
 
     def handle(self, tag):
+        self.writer.new_line()
         self.writer.write("```" + self.get_code_type(tag.get('class')))
         self.writer.new_line()
         self.writer.write(tag.string, html_char_encode=False)
         self.writer.new_line()
-        self.writer.write("\n```")
+        self.writer.write("```")
+        self.writer.new_line()
 
     def get_code_type(self, str_array):
         if str_array is not None:
