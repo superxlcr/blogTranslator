@@ -89,5 +89,5 @@ def get_tag_all_contents_str(tag):
     result = ""
     for content in tag.contents:
         if content.string is not None:
-            result += content
+            result += content.string
     return result

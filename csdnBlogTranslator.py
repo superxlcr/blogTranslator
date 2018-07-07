@@ -19,6 +19,8 @@ def translate(url, my_writer):
     root_processor = processorChainBuilder.build_tag_processor(my_writer)
     root_processor.check(root_tag[len(root_tag) - 1])
 
+    print("done !")
+
 
 if __name__ == '__main__':
     url_param, file_path = utils.check_params()
