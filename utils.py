@@ -45,16 +45,16 @@ def check_params():
     # check param length
     length = len(sys.argv)
     if length != PARAM_LENGTH:
-        print("usage : python csdnBlogTranslator.py csdn_url output_file_path")
+        print("usage : python csdnBlogTranslator.py output_file_path csdn_url")
         exit(0)
 
     # check param
-    url = sys.argv[1]
+    out_file_path = sys.argv[1]
+    url = sys.argv[2]
     is_valid_url = str(url).find(CSDN_BLOG_STR) != -1
     if not is_valid_url:
-        print("the first param must be a csdn blog url which must contains " + CSDN_BLOG_STR)
+        print("the second param must be a csdn blog url which must contains " + CSDN_BLOG_STR)
         exit(0)
-    out_file_path = sys.argv[2]
     return url, out_file_path
 
 
