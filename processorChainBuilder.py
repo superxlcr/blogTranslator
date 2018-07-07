@@ -12,10 +12,10 @@ def build_tag_processor(writer: Writer):
         .next(TBodyTagProcessor()) \
         .next(TrTagProcessor()) \
         .next(TdTagProcessor()) \
+        .next(CodeTagProcessor()) \
         .next(NestingTagProcessor()) \
         .next(ATagProcessor()) \
         .next(BrTagProcessor()) \
-        .next(CodeTagProcessor()) \
         .next(NormalTextTagProcessor()) \
         .next(StrongTagProcessor()) \
         .build()

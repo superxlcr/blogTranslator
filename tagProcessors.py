@@ -267,7 +267,7 @@ class CodeTagProcessor(BaseTagProcessor):
         self.writer.new_line()
         self.writer.write("```" + self.get_code_type(tag.get('class')))
         self.writer.new_line()
-        self.writer.write(tag.string, html_char_encode=False)
+        self.writer.write(utils.get_tag_all_contents_str(tag), html_char_encode=False)
         self.writer.new_line()
         self.writer.write("```")
         self.writer.new_line()
