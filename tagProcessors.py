@@ -226,6 +226,8 @@ class NestingTagProcessor(BaseTagProcessor):
         return len(tag.contents) > 1 or len(tag.contents) == 1 and type(tag.contents[0]).__name__ != 'NavigableString'
 
     def handle(self, tag):
+        if tag.name == 'a' or tag.name == 'strong':
+            print('the tag is <{}>, may be handle by nesting is wrong'.format(tag.name), end='\n')
         self.start_process(tag)
 
 
