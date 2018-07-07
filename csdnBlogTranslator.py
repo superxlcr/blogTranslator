@@ -16,6 +16,8 @@ def translate(url, my_writer):
     utils.write_blog_header(soup, my_writer)
 
     root_tag = soup.find_all('div', 'htmledit_views')
+    if len(root_tag) == 0:
+        root_tag = soup.find_all('div', 'markdown_views')
     root_processor = processorChainBuilder.build_tag_processor(my_writer)
     root_processor.check(root_tag[len(root_tag) - 1])
 
