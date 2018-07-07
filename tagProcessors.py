@@ -124,9 +124,11 @@ class LiTagProcessor(BaseTagProcessor):
             self.writer.write(str(self.__class__.ol_counter) + ". ")
             self.__class__.ol_counter += 1
         # 自己处理换行
+        NavigableStringTagProcessor.miss_new_line = True
         BrTagProcessor.miss_br = True
         self.start_process(tag)
         self.writer.new_line()
+        NavigableStringTagProcessor.miss_new_line = False
         BrTagProcessor.miss_br = False
 
 
