@@ -174,6 +174,7 @@ class TableTagProcessor(BaseTagProcessor):
     def handle(self, tag):
         TrTagProcessor.table_row = 0
         TdThTagProcessor.table_column = 0
+        self.writer.new_line()
         self.start_process(tag)
 
 
