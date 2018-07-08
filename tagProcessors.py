@@ -163,6 +163,9 @@ class ImgTagProcessor(BaseTagProcessor):
         alt = tag.get('alt') if tag.get('alt') is not None else ''
         src = tag.get('src') if tag.get('src') is not None else ''
         self.writer.write("![{}_pic{}]({})".format(alt, self.__class__.img_counter, src))
+        # 这里感觉很奇怪，为啥<img>标签也会有嵌套？
+        if len(tag.contents) > 0:
+            self.start_process(tag)
 
 
 class TableTagProcessor(BaseTagProcessor):
