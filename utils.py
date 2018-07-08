@@ -8,7 +8,7 @@ PARAM_LENGTH = 3
 class Writer:
     """输出写入类"""
     file = None
-    char_encode_array = [('<', '&lt;'), ('>', '&gt;')]
+    char_encode_array = [('<', '&lt;'), ('>', '&gt;'), ('*', 'x')]
 
     def __init__(self, path):
         self.file = open(path, 'w', encoding='utf-8')
