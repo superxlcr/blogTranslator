@@ -9,9 +9,9 @@ def build_tag_processor(writer: Writer):
         .next(LiTagProcessor()) \
         .next(HTagProcessor()) \
         .next(ImgTagProcessor()) \
-        .next(TBodyTagProcessor()) \
+        .next(TableTagProcessor()) \
         .next(TrTagProcessor()) \
-        .next(TdTagProcessor()) \
+        .next(TdThTagProcessor()) \
         .next(CodeTagProcessor()) \
         .next(NestingTagProcessor()) \
         .next(ATagProcessor()) \

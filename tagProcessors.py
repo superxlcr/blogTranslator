@@ -165,15 +165,15 @@ class ImgTagProcessor(BaseTagProcessor):
         self.writer.write("![{}_pic{}]({})".format(alt, self.__class__.img_counter, src))
 
 
-class TBodyTagProcessor(BaseTagProcessor):
-    """<tbody> tag 处理器"""
+class TableTagProcessor(BaseTagProcessor):
+    """<table> tag 处理器"""
 
     def can_handle_tag(self, tag):
-        return tag.name == 'tbody'
+        return tag.name == 'table'
 
     def handle(self, tag):
         TrTagProcessor.table_row = 0
-        TdTagProcessor.table_column = 0
+        TdThTagProcessor.table_column = 0
         self.start_process(tag)
 
 
@@ -188,11 +188,11 @@ class TrTagProcessor(BaseTagProcessor):
     def handle(self, tag):
         if self.__class__.table_row == 1:
             self.writer.write("|")
-            for i in range(0, TdTagProcessor.table_column):
+            for i in range(0, TdThTagProcessor.table_column):
                 self.writer.write(" - |")
             self.writer.new_line()
 
-        TdTagProcessor.table_column = 0
+        TdThTagProcessor.table_column = 0
         self.__class__.table_row += 1
 
         self.writer.write("| ")
@@ -205,13 +205,13 @@ class TrTagProcessor(BaseTagProcessor):
         BrTagProcessor.miss_br = False
 
 
-class TdTagProcessor(BaseTagProcessor):
-    """<td> tag 处理器"""
+class TdThTagProcessor(BaseTagProcessor):
+    """<td> <th> tag 处理器"""
 
     table_column = 0
 
     def can_handle_tag(self, tag):
-        return tag.name == 'td'
+        return tag.name == 'td' or tag.name == 'th'
 
     def handle(self, tag):
         self.__class__.table_column += 1
