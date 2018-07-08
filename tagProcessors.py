@@ -281,6 +281,10 @@ class CodeTagProcessor(BaseTagProcessor):
                     return 'java'
                 elif string.find('html') != -1:
                     return 'html'
+                elif string.find('bash') != -1:
+                    return 'bash'
+                elif string.find('cpp') != -1:
+                    return 'cpp'
         return ''
 
 
