@@ -311,3 +311,13 @@ class StrongTagProcessor(BaseTagProcessor):
 
     def handle(self, tag):
         self.writer.write_ignore_new_line("**{}**".format(tag.string))
+
+
+class EmTagProcessor(BaseTagProcessor):
+    """<em> tag 处理器"""
+
+    def can_handle_tag(self, tag):
+        return tag.name == 'em'
+
+    def handle(self, tag):
+        self.writer.write_ignore_new_line("*{}*".format(tag.string))
