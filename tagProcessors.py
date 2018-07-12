@@ -310,7 +310,9 @@ class StrongTagProcessor(BaseTagProcessor):
         return tag.name == 'strong'
 
     def handle(self, tag):
-        self.writer.write_ignore_new_line("**{}**".format(tag.string))
+        self.writer.write("**", html_char_encode=False)
+        self.writer.write_ignore_new_line(tag.string)
+        self.writer.write("**", html_char_encode=False)
 
 
 class EmTagProcessor(BaseTagProcessor):
@@ -320,4 +322,6 @@ class EmTagProcessor(BaseTagProcessor):
         return tag.name == 'em'
 
     def handle(self, tag):
-        self.writer.write_ignore_new_line("*{}*".format(tag.string))
+        self.writer.write("*", html_char_encode=False)
+        self.writer.write_ignore_new_line(tag.string)
+        self.writer.write("*", html_char_encode=False)
