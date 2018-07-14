@@ -139,6 +139,7 @@ class HTagProcessor(BaseTagProcessor):
         return tag.name == 'h1' or tag.name == 'h2' or tag.name == 'h3' or tag.name == 'h4' or tag.name == 'h5'
 
     def handle(self, tag):
+        self.writer.new_line()
         if tag.name == 'h1':
             self.writer.write("# ")
         elif tag.name == 'h2':
@@ -150,6 +151,7 @@ class HTagProcessor(BaseTagProcessor):
         elif tag.name == 'h5':
             self.writer.write("##### ")
         self.writer.write_ignore_new_line(utils.get_tag_all_contents_str(tag))
+        self.writer.new_line()
 
 
 class ImgTagProcessor(BaseTagProcessor):
