@@ -147,7 +147,7 @@ class HTagProcessor(BaseTagProcessor):
             self.writer.write("### ")
         elif tag.name == 'h4':
             self.writer.write("#### ")
-        elif tag.name == 'h4':
+        elif tag.name == 'h5':
             self.writer.write("##### ")
         self.writer.write_ignore_new_line(utils.get_tag_all_contents_str(tag))
 
