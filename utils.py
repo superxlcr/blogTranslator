@@ -87,7 +87,10 @@ def get_writer(path):
 
 def get_tag_all_contents_str(tag):
     result = ""
-    for content in tag.contents:
-        if content.string is not None:
-            result += content.string
+    if type(tag).__name__ == 'NavigableString' or len(tag.contents) == 0:
+        if tag.string is not None:
+            result += tag.string
+    else:
+        for content in tag.contents:
+            result += get_tag_all_contents_str(content)
     return result
