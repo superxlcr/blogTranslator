@@ -15,6 +15,8 @@ class Writer:
 
     def write(self, string, html_char_encode=True):
         """写入字符串"""
+        if string is None:
+            return
         if html_char_encode:
             string = self.html_char_encode(string)
         self.file.write(string)
@@ -22,6 +24,8 @@ class Writer:
 
     def write_ignore_new_line(self, string, html_char_encode=True):
         """写入字符串，并忽略空行"""
+        if string is None:
+            return
         if html_char_encode:
             string = self.html_char_encode(string)
         string = string.replace('\n', '')
