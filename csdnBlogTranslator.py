@@ -4,12 +4,14 @@ from bs4 import BeautifulSoup
 
 import processorChainBuilder
 import utils
+import ssl
 
 
 def translate(url, my_writer):
     # net request
     print("do request with url : " + url)
-    response = request.urlopen(url).read().decode('utf-8')
+    context = ssl._create_unverified_context()
+    response = request.urlopen(url, context=context).read().decode('utf-8')
     soup = BeautifulSoup(response, 'html.parser')
 
     # write blog header
