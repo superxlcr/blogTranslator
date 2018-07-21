@@ -35,16 +35,11 @@ class BaseTagProcessor(object):
 class NavigableStringTagProcessor(BaseTagProcessor):
     """纯字符 tag 处理器"""
 
-    miss_new_line = False
-
     def can_handle_tag(self, tag):
         return type(tag).__name__ == 'NavigableString'
 
     def handle(self, tag):
-        if self.__class__.miss_new_line:
-            self.writer.write_ignore_new_line(tag.string)
-        else:
-            self.writer.write(tag.string)
+        self.writer.write(tag.string)
 
 
 class UlTagProcessor(BaseTagProcessor):
@@ -124,11 +119,11 @@ class LiTagProcessor(BaseTagProcessor):
             self.writer.write(str(self.__class__.ol_counter) + ". ")
             self.__class__.ol_counter += 1
         # 自己处理换行
-        NavigableStringTagProcessor.miss_new_line = True
+        self.writer.disable_new_line = True
         BrTagProcessor.miss_br = True
         self.start_process(tag)
         self.writer.new_line()
-        NavigableStringTagProcessor.miss_new_line = False
+        self.writer.disable_new_line = False
         BrTagProcessor.miss_br = False
 
 
@@ -207,11 +202,11 @@ class TrTagProcessor(BaseTagProcessor):
 
         self.writer.write("| ")
         # 下面把换行屏蔽，由TrTag处理器统一换行
-        NavigableStringTagProcessor.miss_new_line = True
+        self.writer.disable_new_line = True
         BrTagProcessor.miss_br = True
         self.start_process(tag)
         self.writer.new_line()
-        NavigableStringTagProcessor.miss_new_line = False
+        self.writer.disable_new_line = False
         BrTagProcessor.miss_br = False
 
 

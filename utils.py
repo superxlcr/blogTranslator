@@ -10,10 +10,12 @@ BLOG_FILE_NAME = "blog"
 
 class Writer:
     """输出写入类"""
-    dir_path = None
-    file = None
     CHAR_ENCODE_LIST = [('<', '&lt;'), ('>', '&gt;'), ('*', 'x')]
     IMAGE_SUFFIX_LIST = {('png', '.png'), ('jpeg', '.jpg'), ('gif', '.gif')}
+
+    dir_path = None
+    file = None
+    disable_new_line = False
 
     def __init__(self, dir_path):
         self.dir_path = dir_path
@@ -21,6 +23,10 @@ class Writer:
 
     def write(self, string, html_char_encode=True):
         """写入字符串"""
+        if self.disable_new_line:
+            # 如果开启了关闭换行flag，则使用另一个方法写入
+            self.write_ignore_new_line(string, html_char_encode)
+            return
         if string is None:
             return
         if html_char_encode:
