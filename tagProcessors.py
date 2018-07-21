@@ -167,7 +167,8 @@ class ImgTagProcessor(BaseTagProcessor):
             self.__class__.img_counter += 1
             alt = tag.get('alt') if tag.get('alt') is not None else ''
             src = tag.get('src')
-            self.writer.write("![{}_pic{}]({})".format(alt, self.__class__.img_counter, src))
+            file_name = self.writer.download_image(src, self.__class__.img_counter)
+            self.writer.write("![{}_pic{}]({})".format(alt, self.__class__.img_counter, file_name))
             # 这里感觉很奇怪，为啥<img>标签也会有嵌套？
             if len(tag.contents) > 0:
                 self.start_process(tag)
@@ -330,3 +331,15 @@ class EmTagProcessor(BaseTagProcessor):
         self.writer.write("*", html_char_encode=False)
         self.writer.write_ignore_new_line(tag.string)
         self.writer.write("*", html_char_encode=False)
+
+
+class HrTagProcessor(BaseTagProcessor):
+    """<hr> tag 处理器"""
+
+    def can_handle_tag(self, tag):
+        return tag.name == 'hr'
+
+    def handle(self, tag):
+        self.writer.new_line()
+        self.writer.write("---")
+        self.writer.new_line()

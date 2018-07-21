@@ -1,10 +1,11 @@
+import os
+import ssl
 from urllib import request
 
 from bs4 import BeautifulSoup
 
 import processorChainBuilder
 import utils
-import ssl
 
 
 def translate(url, my_writer):
@@ -27,6 +28,8 @@ def translate(url, my_writer):
 
 
 if __name__ == '__main__':
-    url_param, file_path = utils.check_params()
-    writer = utils.get_writer(file_path)
+    url_param, output_dir = utils.check_params()
+    if not os.path.exists(output_dir) or not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
+    writer = utils.get_writer(output_dir)
     translate(url_param, writer)

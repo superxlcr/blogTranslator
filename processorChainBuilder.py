@@ -19,6 +19,7 @@ def build_tag_processor(writer: Writer):
         .next(NormalTextTagProcessor()) \
         .next(StrongTagProcessor()) \
         .next(EmTagProcessor()) \
+        .next(HrTagProcessor()) \
         .build()
 
 
