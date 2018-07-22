@@ -54,7 +54,7 @@ def get_blog_time(soup, blog_type: BlogType):
                                               match.group(5), match.group(6))
     elif blog_type == BlogType.jianshu:
         time = soup.find_all('span', 'publish-time')[0].string
-        pattern = re.compile(r'(\d{4}).?(\d{2}).?(\d{2}).*(\d{2}).?(\d{2})\*')
+        pattern = re.compile(r'(\d{4}).?(\d{2}).?(\d{2}).*(\d{2}).?(\d{2})')
         match = pattern.match(time)
         time_str = "{}-{}-{} {}:{}:00".format(match.group(1), match.group(2), match.group(3), match.group(4),
                                               match.group(5))
