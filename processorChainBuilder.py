@@ -1,5 +1,5 @@
 from tagProcessors import *
-from utils import Writer
+from writer import Writer
 
 
 def build_tag_processor(writer: Writer):

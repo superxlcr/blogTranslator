@@ -1,116 +1,87 @@
-import os
 import re
 import sys
-from urllib import request
+from enum import Enum
 
-CSDN_BLOG_STR = str("blog.csdn.net")
+from writer import Writer
+
 PARAM_LENGTH = 3
-BLOG_FILE_NAME = "blog"
 
 
-class Writer:
-    """输出写入类"""
-    CHAR_ENCODE_LIST = [('<', '&lt;'), ('>', '&gt;'), ('*', 'x')]
-    IMAGE_SUFFIX_LIST = {('png', '.png'), ('jpeg', '.jpg'), ('gif', '.gif')}
-
-    dir_path = None
-    file = None
-    disable_new_line = False
-
-    def __init__(self, dir_path):
-        self.dir_path = dir_path
-        self.file = open(os.path.join(dir_path, BLOG_FILE_NAME), 'w', encoding='utf-8')
-
-    def write(self, string, html_char_encode=True):
-        """写入字符串"""
-        if self.disable_new_line:
-            # 如果开启了关闭换行flag，则使用另一个方法写入
-            self.write_ignore_new_line(string, html_char_encode)
-            return
-        if string is None:
-            return
-        if html_char_encode:
-            string = self.html_char_encode(string)
-        self.file.write(string)
-        pass
-
-    def write_ignore_new_line(self, string, html_char_encode=True):
-        """写入字符串，并忽略空行"""
-        if string is None:
-            return
-        if html_char_encode:
-            string = self.html_char_encode(string)
-        string = string.replace('\n', '')
-        self.file.write(string)
-
-    def html_char_encode(self, string):
-        for (html_char, encode_char) in self.__class__.CHAR_ENCODE_LIST:
-            string = string.replace(html_char, encode_char)
-        return string
-
-    def new_line(self):
-        """写入空行"""
-        self.file.write('\n')
-
-    def tab(self):
-        """写入tab键"""
-        self.file.write('   ')
-
-    def download_image(self, image_url, file_name):
-        req = request.Request(image_url)
-        req.add_header("referer", "https://blog.csdn.net")
-        response = request.urlopen(req)
-        content_type = response.getheader('Content-Type')
-        image_suffix = ""
-        for key, suffix in self.__class__.IMAGE_SUFFIX_LIST:
-            if content_type.find(key) != -1:
-                image_suffix = suffix
-                break
-        image = response.read()
-        file_name_with_suffix = str(file_name) + image_suffix
-        file = open(os.path.join(self.dir_path, file_name_with_suffix), 'wb')
-        file.write(image)
-        return file_name_with_suffix
+class BlogType(Enum):
+    unknown = ""
+    csdn = "blog.csdn.net"
+    jianshu = "www.jianshu.com"
 
 
 def check_params():
     # check param length
     length = len(sys.argv)
     if length != PARAM_LENGTH:
-        print("usage : python csdnBlogTranslator.py output_dir csdn_url")
+        print("usage : python blogTranslator.py output_dir blog_url")
         exit(0)
 
     # check param
     out_dir = sys.argv[1]
     url = sys.argv[2]
-    is_valid_url = str(url).find(CSDN_BLOG_STR) != -1
-    if not is_valid_url:
-        print("the second param must be a csdn blog url which must contains " + CSDN_BLOG_STR)
+    blog_type = BlogType.unknown
+    if str(url).find(BlogType.csdn.value) != -1:
+        blog_type = BlogType.csdn
+    elif str(url).find(BlogType.jianshu.value) != -1:
+        blog_type = BlogType.jianshu
+    else:
+        print("the second param must be a csdn or jianshu blog url which must contains\n {}\n or\n {}".format(
+            BlogType.csdn.value, BlogType.jianshu.value))
         exit(0)
-    return url, out_dir
+    return url, out_dir, blog_type
 
 
-def get_blog_title(soup):
-    title = soup.find_all('h1', 'title-article')[0].string
+def get_blog_title(soup, blog_type: BlogType):
+    title = ""
+    if blog_type == BlogType.csdn:
+        title = soup.find_all('h1', 'title-article')[0].string
+    elif blog_type == BlogType.jianshu:
+        title = soup.find_all('h1', 'title')[0].string
     return title
 
 
-def get_blog_time(soup):
-    time = soup.find_all('span', 'time')[0].string
-    pattern = re.compile(r'(\d{4}).?(\d{2}).?(\d{2}).*(\d{2}).?(\d{2}).?(\d{2})')
-    match = pattern.match(time)
-    return "{}-{}-{} {}:{}:{}".format(match.group(1), match.group(2), match.group(3), match.group(4),
-                                      match.group(5), match.group(6))
+def get_blog_time(soup, blog_type: BlogType):
+    time_str = ""
+    if blog_type == BlogType.csdn:
+        time = soup.find_all('span', 'time')[0].string
+        pattern = re.compile(r'(\d{4}).?(\d{2}).?(\d{2}).*(\d{2}).?(\d{2}).?(\d{2})')
+        match = pattern.match(time)
+        time_str = "{}-{}-{} {}:{}:{}".format(match.group(1), match.group(2), match.group(3), match.group(4),
+                                              match.group(5), match.group(6))
+    elif blog_type == BlogType.jianshu:
+        time = soup.find_all('span', 'publish-time')[0].string
+        pattern = re.compile(r'(\d{4}).?(\d{2}).?(\d{2}).*(\d{2}).?(\d{2})\*')
+        match = pattern.match(time)
+        time_str = "{}-{}-{} {}:{}:00".format(match.group(1), match.group(2), match.group(3), match.group(4),
+                                              match.group(5))
+    return time_str
 
 
-def write_blog_header(soup, writer):
+def write_blog_header(soup, writer, blog_type: BlogType):
     writer.write("""---
 title: {}
 tags: []
 categories: []
 date: {}
 description: 
----""".format(get_blog_title(soup), get_blog_time(soup)))
+---""".format(get_blog_title(soup, blog_type), get_blog_time(soup, blog_type)))
+
+
+def get_root_tag(soup, blog_type: BlogType):
+    root_tag = None
+    if blog_type == BlogType.csdn:
+        root_tag = soup.find_all('div', 'htmledit_views')
+        if len(root_tag) == 0:
+            root_tag = soup.find_all('div', 'markdown_views')
+    elif blog_type == BlogType.jianshu:
+        root_tag = soup.find_all('div', 'show-content-free')
+    if root_tag is not None:
+        root_tag = root_tag[len(root_tag) - 1]
+    return root_tag
 
 
 def get_writer(dir_path):
@@ -126,3 +97,9 @@ def get_tag_all_contents_str(tag):
         for content in tag.contents:
             result += get_tag_all_contents_str(content)
     return result
+
+
+def get_valid_url(url):
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
+    return "http://" + url.lstrip('/')

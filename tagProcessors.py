@@ -159,6 +159,7 @@ class ImgTagProcessor(BaseTagProcessor):
 
     def handle(self, tag):
         if tag.get('src') is not None and tag.get('src') != '':
+            # csdn image
             self.__class__.img_counter += 1
             alt = tag.get('alt') if tag.get('alt') is not None else ''
             src = tag.get('src')
@@ -167,6 +168,12 @@ class ImgTagProcessor(BaseTagProcessor):
             # 这里感觉很奇怪，为啥<img>标签也会有嵌套？
             if len(tag.contents) > 0:
                 self.start_process(tag)
+        elif tag.get('data-original-src') is not None and tag.get('data-original-src') != '':
+            # jianshu image
+            self.__class__.img_counter += 1
+            src = utils.get_valid_url(tag.get('data-original-src'))
+            file_name = self.writer.download_image(src, self.__class__.img_counter)
+            self.writer.write("![pic{}]({})".format(self.__class__.img_counter, file_name))
 
 
 class TableTagProcessor(BaseTagProcessor):
