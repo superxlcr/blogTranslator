@@ -346,3 +346,13 @@ class HrTagProcessor(BaseTagProcessor):
         self.writer.new_line()
         self.writer.write("---")
         self.writer.new_line()
+
+
+class IgnoreTagProcessor(BaseTagProcessor):
+    """忽略 tag 处理器"""
+
+    def can_handle_tag(self, tag):
+        return type(tag).__name__ == 'Comment'
+
+    def handle(self, tag):
+        pass

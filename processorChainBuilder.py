@@ -3,7 +3,8 @@ from writer import Writer
 
 
 def build_tag_processor(writer: Writer):
-    return ProcessorChainBuilder(NavigableStringTagProcessor(), writer) \
+    return ProcessorChainBuilder(IgnoreTagProcessor(), writer) \
+        .next(NavigableStringTagProcessor()) \
         .next(UlTagProcessor()) \
         .next(OlTagProcessor()) \
         .next(LiTagProcessor()) \
