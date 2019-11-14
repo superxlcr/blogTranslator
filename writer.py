@@ -1,6 +1,8 @@
 import os
 from urllib import request
 
+from enumUtils import BlogType
+
 BLOG_FILE_NAME = "blog"
 
 
@@ -14,10 +16,12 @@ class Writer:
     dir_path = None
     file = None
     disable_new_line = False
+    blog_type = BlogType.unknown
 
-    def __init__(self, dir_path):
+    def __init__(self, dir_path, blog_type: BlogType):
         self.dir_path = dir_path
         self.file = open(os.path.join(dir_path, BLOG_FILE_NAME), 'w', encoding='utf-8')
+        self.blog_type = blog_type
 
     def write(self, string, html_char_encode=True):
         """写入字符串"""
@@ -63,7 +67,8 @@ class Writer:
 
     def download_image(self, image_url, file_name):
         req = request.Request(image_url)
-        req.add_header("referer", "https://blog.csdn.net")
+        if self.blog_type == BlogType.csdn:
+            req.add_header("referer", "https://blog.csdn.net")
         response = request.urlopen(req)
         content_type = response.getheader('Content-Type')
         image_suffix = ""

@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 import processorChainBuilder
 import utils
-from utils import BlogType
+from enumUtils import BlogType
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
 
@@ -34,5 +34,5 @@ if __name__ == '__main__':
     url_param, output_dir, blog_type_param = utils.check_params()
     if not os.path.exists(output_dir) or not os.path.isdir(output_dir):
         os.mkdir(output_dir)
-    writer = utils.get_writer(output_dir)
+    writer = utils.get_writer(output_dir, blog_type_param)
     translate(url_param, writer, blog_type_param)
