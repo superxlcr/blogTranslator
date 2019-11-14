@@ -90,8 +90,8 @@ def get_root_tag(soup, blog_type: BlogType):
 
 def get_jianshu_root_tag(soup):
     for name in JIANSHU_ROOT_TAG_NAME:
-        if len(soup.find_all('div', name)) != 0:
-            return soup.find_all('div', name)
+        if len(soup.find_all('', name)) != 0:
+            return soup.find_all('', name)
     return None
 
 

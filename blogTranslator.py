@@ -24,6 +24,9 @@ def translate(url, my_writer, blog_type: BlogType):
     utils.write_blog_header(soup, my_writer, blog_type)
 
     root_tag = utils.get_root_tag(soup, blog_type)
+    if root_tag is None:
+        print("root tag is None !")
+        exit()
     root_processor = processorChainBuilder.build_tag_processor(my_writer)
     root_processor.check(root_tag)
 
